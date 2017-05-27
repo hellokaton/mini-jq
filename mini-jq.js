@@ -1,5 +1,5 @@
-var Jquery = function (selector, el) {
-    this.selector = selector;
+var Jquery = function (ss, el) {
+    this.selector = ss;
     this.el = el;
 };
 
@@ -47,9 +47,29 @@ Jquery.prototype.length = function () {
 };
 
 Jquery.prototype.each = function (eachCall) {
-    var len = this.length();
-    for (var i = 0; i < len; i++) {
-        eachCall(new Jquery('', this.el[i]));
+    Array.prototype.forEach.call(this.el, function (index, value) {
+        eachCall(index, new Jquery('', value));
+    });
+
+    // var len = this.length();
+    // for (var i = 0; i < len; i++) {
+    //     eachCall(new Jquery('', this.el[i]));
+    // }
+};
+
+Jquery.prototype.attr = function (attr, value) {
+    if (value) {
+        this.el.setAttribute(attr, value);
+    } else {
+        return this.el.getAttribute(attr);
+    }
+};
+
+Jquery.prototype.css = function (ruleName, ruleValue) {
+    if (ruleValue) {
+        this.el.style[ruleName] = ruleValue;
+    } else {
+        return getComputedStyle(this.el)[ruleName];
     }
 };
 
@@ -76,33 +96,93 @@ Jquery.prototype.insertBefore = function (html) {
     this.el.insertAdjacentHTML('beforebegin', html);
 };
 
+Jquery.prototype.before = function (html) {
+    this.el.insertAdjacentHTML('beforebegin', html);
+};
+
 Jquery.prototype.insertAfter = function (html) {
     this.el.insertAdjacentHTML('afterend', html);
 };
 
-Jquery.prototype.ready = function (eventHandler) {
+Jquery.prototype.after = function (html) {
+    this.el.insertAdjacentHTML('afterend', html);
+};
+
+Jquery.prototype.children = function () {
+    return new Jquery('', this.el.children);
+};
+
+Jquery.prototype.ready = function (fn) {
     // 检测 DOMContentLoaded 是否已完成
     if (document.readyState === 'complete' || document.readyState !== 'loading') {
-        eventHandler();
+        fn();
     } else {
-        document.addEventListener('DOMContentLoaded', eventHandler);
+        document.addEventListener('DOMContentLoaded', fn);
     }
 };
 
 Jquery.prototype.is = function (selector) {
-    return this.el.matches(selector);
+    return (this.el.matches || this.el.matchesSelector || this.el.msMatchesSelector
+    || this.el.mozMatchesSelector || this.el.webkitMatchesSelector
+    || this.el.oMatchesSelector).call(this.el, selector);
+};
+
+Jquery.prototype.prev = function () {
+    return new Jquery('', this.el.previousElementSibling);
+};
+
+Jquery.prototype.next = function () {
+    return new Jquery('', this.el.nextElementSibling);
+};
+
+Jquery.prototype.siblings = function () {
+    //   Array.prototype.filter.call(el.parentNode.children, function(child){
+    //   return child !== el;
+// })
+};
+
+Jquery.prototype.offset = function () {
+    var rect = this.el.getBoundingClientRect();
+    return {
+        top: rect.top + document.body.scrollTop,
+        left: rect.left + document.body.scrollLeft
+    };
+};
+
+Jquery.prototype.offsetParent = function () {
+    return this.el.offsetParent || this.el;
+};
+
+Jquery.prototype.outerHeight = function () {
+    return this.el.offsetHeight;
+};
+
+Jquery.prototype.outerWidth = function () {
+    return this.el.offsetWidth;
+};
+
+Jquery.prototype.parent = function () {
+    return new Jquery('', this.el.parentNode);
+};
+
+Jquery.prototype.position = function () {
+    return {left: this.el.offsetLeft, top: this.el.offsetTop};
+};
+
+Jquery.prototype.remove = function () {
+    return this.el.parentNode.removeChild(this.el);
 };
 
 Jquery.prototype.empty = function () {
     this.el.innerHTML = '';
 };
 
-Jquery.prototype.on = function (eventName, eventHandler) {
-    this.el.addEventListener(eventName, eventHandler);
+Jquery.prototype.on = function (eventName, fn) {
+    this.el.addEventListener(eventName, fn);
 };
 
-Jquery.prototype.off = function (eventName, eventHandler) {
-    this.el.removeEventListener(eventName, eventHandler);
+Jquery.prototype.off = function (eventName, fn) {
+    this.el.removeEventListener(eventName, fn);
 };
 
 Jquery.prototype.show = function () {
@@ -159,7 +239,7 @@ Jquery.prototype.fadeTo = function (sd, opacity) {
  */
 Jquery.prototype.fadeToggle = function () {
     this.el.style.transition = 'opacity 3s';
-    const {opacity} = this.el.ownerDocument.defaultView.getComputedStyle(this.el, null);
+    var opacity = this.el.ownerDocument.defaultView.getComputedStyle(this.el, null);
     if (opacity === '1') {
         this.el.style.opacity = '0';
     } else {
@@ -188,6 +268,41 @@ Jquery.prototype.trigger = function (eventName, data) {
         event.initCustomEvent(eventName, true, true, data);
     }
     this.el.dispatchEvent(event);
+};
+
+Jquery.prototype.addClass = function (cls) {
+    if (this.el.classList)
+        this.el.classList.add(cls);
+    else
+        this.el.className += ' ' + cls;
+};
+
+Jquery.prototype.removeClass = function (cls) {
+    if (this.el.classList)
+        this.el.classList.remove(cls);
+    else
+        this.el.className = this.el.className.replace(new RegExp('(^|\\b)' + cls.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+};
+
+Jquery.prototype.toggleClass = function (cls) {
+    if (this.el.classList) {
+        this.el.classList.toggle(cls);
+    } else {
+        var classes = this.el.className.split(' ');
+        var existingIndex = classes.indexOf(cls);
+        if (existingIndex >= 0)
+            classes.splice(existingIndex, 1);
+        else
+            classes.push(cls);
+        this.el.className = classes.join(' ');
+    }
+};
+
+Jquery.prototype.hasClass = function (cls) {
+    if (this.el.classList)
+        this.el.classList.contains(cls);
+    else
+        new RegExp('(^| )' + cls + '( |$)', 'gi').test(this.el.className);
 };
 
 /**
@@ -219,7 +334,7 @@ $.ajax = function (options) {
                 options.success(data);
             });
         } else {
-            options.fail(response);
+            options.error(response);
         }
     }).catch(function (e) {
         options.fail(e);
@@ -236,6 +351,15 @@ $.get = function (url, success) {
     $.ajax({
         url: url,
         method: 'GET',
+        success: success
+    });
+};
+
+$.getJSON = function (url, success) {
+    $.ajax({
+        url: url,
+        method: 'GET',
+        dataType: 'json',
         success: success
     });
 };
@@ -351,7 +475,24 @@ $.isPlainObject = function (obj) {
  * @param opts
  */
 $.extend = function (obj, defaultOpts, opts) {
-    Object.assign(obj || {}, defaultOpts || {}, opts || {});
+    // Object.assign(obj || {}, defaultOpts || {}, opts || {});
+    var deepExtend = function (out) {
+        out = out || {};
+        for (var i = 1; i < arguments.length; i++) {
+            var obj = arguments[i];
+            if (!obj)
+                continue;
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    if (typeof obj[key] === 'object')
+                        out[key] = deepExtend(out[key], obj[key]);
+                    else
+                        out[key] = obj[key];
+                }
+            }
+        }
+        return out;
+    };
 };
 
 /**
@@ -381,8 +522,7 @@ $.map = function (array, callback) {
  * @param callback
  */
 $.each = function (array, callback) {
-    // Native
-    array.forEach(callback(value, index));
+    array.forEach(callback(item, i));
 };
 
 /**
