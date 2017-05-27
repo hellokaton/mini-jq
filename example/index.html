@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>迷你版Jquery</title>
+</head>
+<body>
+
+<div id="container" class="row">
+    <h1>Hello World</h1>
+</div>
+
+<ul id="list">
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+</ul>
+
+<script src="../mini-jq.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        var html = $('#container').html();
+        console.log(html);
+
+        var text = $('#container').find('h1').text();
+        console.log(text);
+
+        $('#list li').each(function (item) {
+            console.log(item.text());
+        });
+
+        //    $.ajax({
+        //        url: 'https://api.github.com/users/biezhi',
+        //        method: 'get',
+        //        success: function (response) {
+        //            console.log(JSON.stringify(response));
+        //        },
+        //        fail: function (e) {
+        //            console.error(e);
+        //        }
+        //    });
+
+        $.get('https://api.github.com/users/biezhi', function (response) {
+            console.log(response);
+        });
+    });
+
+</script>
+</body>
+</html>
