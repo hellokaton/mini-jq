@@ -42,6 +42,20 @@ Jquery.prototype.text = function (text) {
     }
 };
 
+/**
+ * 返回DOM value
+ *
+ * @param value
+ * @returns {string|Number}
+ */
+Jquery.prototype.val = function (value) {
+    if (value) {
+        this.el.value = value;
+    } else {
+        return this.el.value;
+    }
+};
+
 Jquery.prototype.length = function () {
     return this.el.length;
 };
