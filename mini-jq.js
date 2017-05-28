@@ -1,19 +1,19 @@
-var Jquery = function (ss, el) {
-    this.selector = ss;
+var Jquery = function (s, el) {
+    this.s = s;
     this.el = el;
 };
 
 function $(selector) {
-    console.log('selector => ' + selector);
+    selector = typeof selector == "object" ? 'document' : selector;
+    // console.log('selector => ' + selector);
     var dom = document.querySelectorAll(selector);
-    if (dom.length <= 0) {
-        return null;
-    }
     var el;
-    if (dom.length == 1) {
-        el = document.querySelectorAll(selector)[0];
+    if (dom.length == 0) {
+        el = dom;
+    } else if (dom.length == 1) {
+        el = dom[0];
     } else {
-        el = document.querySelectorAll(selector);
+        el = dom;
     }
     return new Jquery(selector, el);
 }
@@ -61,14 +61,9 @@ Jquery.prototype.length = function () {
 };
 
 Jquery.prototype.each = function (eachCall) {
-    Array.prototype.forEach.call(this.el, function (index, value) {
+    Array.prototype.forEach.call(this.el, function (value, index) {
         eachCall(index, new Jquery('', value));
     });
-
-    // var len = this.length();
-    // for (var i = 0; i < len; i++) {
-    //     eachCall(new Jquery('', this.el[i]));
-    // }
 };
 
 Jquery.prototype.attr = function (attr, value) {
@@ -78,6 +73,11 @@ Jquery.prototype.attr = function (attr, value) {
         return this.el.getAttribute(attr);
     }
 };
+
+Jquery.prototype.removeAttr = function (attr) {
+    this.el.removeAttribute(attr);
+};
+
 
 Jquery.prototype.css = function (ruleName, ruleValue) {
     if (ruleValue) {
@@ -126,6 +126,10 @@ Jquery.prototype.children = function () {
     return new Jquery('', this.el.children);
 };
 
+Jquery.prototype.eq = function (index) {
+    return new Jquery('', this.el[index]);
+};
+
 Jquery.prototype.ready = function (fn) {
     // 检测 DOMContentLoaded 是否已完成
     if (document.readyState === 'complete' || document.readyState !== 'loading') {
@@ -135,24 +139,45 @@ Jquery.prototype.ready = function (fn) {
     }
 };
 
+/**
+ * 是否存在该元素
+ *
+ * @param selector
+ * @returns {*}
+ */
 Jquery.prototype.is = function (selector) {
     return (this.el.matches || this.el.matchesSelector || this.el.msMatchesSelector
     || this.el.mozMatchesSelector || this.el.webkitMatchesSelector
     || this.el.oMatchesSelector).call(this.el, selector);
 };
 
+/**
+ * 上一个节点
+ *
+ * @returns {Jquery}
+ */
 Jquery.prototype.prev = function () {
     return new Jquery('', this.el.previousElementSibling);
 };
 
+/**
+ * 下一个节点
+ *
+ * @returns {Jquery}
+ */
 Jquery.prototype.next = function () {
     return new Jquery('', this.el.nextElementSibling);
 };
 
-Jquery.prototype.siblings = function () {
-    //   Array.prototype.filter.call(el.parentNode.children, function(child){
-    //   return child !== el;
-// })
+Jquery.prototype.siblings = function (selector) {
+    var elem = selector ? document.querySelectorAll(selector) : this.el;
+    var ret = [], elem = elem.nextSibling;
+    for (; elem; elem = elem.nextSibling) {
+        if (elem.nodeType == 1) {
+            ret.push(new Jquery('', elem));
+        }
+    }
+    return ret;
 };
 
 Jquery.prototype.offset = function () {

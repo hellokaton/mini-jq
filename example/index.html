@@ -11,10 +11,15 @@
 </div>
 
 <ul id="list">
-    <li>1</li>
-    <li>2</li>
-    <li>3</li>
+    <li>1 - helloworld</li>
+    <li>2 - function</li>
+    <li>3 - advice</li>
 </ul>
+
+<form id="loginForm" method="post">
+    <input id="username" name="username" type="text" value="jack"/>
+    <button id="changeText" type="button">切换</button>
+</form>
 
 <script src="../mini-jq.js" type="text/javascript"></script>
 <script type="text/javascript">
@@ -24,10 +29,18 @@
         console.log(html);
 
         var text = $('#container').find('h1').text();
-        console.log(text);
+        console.log('h1 的文本是 => ' + text);
 
-        $('#list li').each(function (item) {
+        $('#list li').each(function (index, item) {
             console.log(item.text());
+        });
+
+        console.log('第2个节点的文本是 => ' + $('li').eq(1).text());
+
+        console.log('username => ' + $('#username').val());
+
+        $('#changeText').on('click', function (e) {
+            console.log('点击按钮后 username => ' + $('#username').val());
         });
 
         //    $.ajax({
@@ -41,10 +54,11 @@
         //        }
         //    });
 
-        $.get('https://api.github.com/users/biezhi', function (response) {
-            console.log(response);
-        });
+//        $.get('https://api.github.com/users/biezhi', function (response) {
+//            console.log(response);
+//        });
     });
+
 
 </script>
 </body>
